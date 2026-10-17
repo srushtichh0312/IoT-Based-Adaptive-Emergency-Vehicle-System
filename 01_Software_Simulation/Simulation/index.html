@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RAKSHAK YOJNA – Emergency Vehicle Traffic Signal Preemption Simulation</title>
+<style>
+:root{--bg:#070d1a;--panel:#0f1a30;--line:#1e2f52;--text:#dbe7fb;--mut:#7d92b8;--cy:#38bdf8;--red:#ef4444;--blue:#3b9bff;--grn:#22c55e;--amb:#f5b13d}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:radial-gradient(1200px 600px at 10% -10%,#10234a66,transparent),var(--bg);color:var(--text);font:14px/1.45 "Segoe UI",system-ui,-apple-system,Roboto,sans-serif}
+.mono{font-family:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace}
+.wrap{max-width:1560px;margin:0 auto;padding:14px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding:14px 20px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(120deg,#102042,#0b1426 60%,#101a2e);position:relative;overflow:hidden}
+.top:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 38px,#1b2d5122 38px 39px),repeating-linear-gradient(0deg,transparent 0 38px,#1b2d5122 38px 39px);pointer-events:none}
+.brand{display:flex;gap:16px;align-items:center;position:relative}
+.logo{width:56px;height:56px;border-radius:14px;background:linear-gradient(145deg,#ef4444,#9b1c1c);display:grid;place-items:center;box-shadow:0 0 24px #ef444466;flex:none}
+h1{margin:0;font-size:30px;letter-spacing:.22em;font-weight:800;line-height:1.1}
+.sub{font-size:13.5px;color:#b3c6e8;margin-top:2px}
+.tagline{font-style:italic;color:var(--cy);font-size:12.5px;margin-top:2px}
+.badges{display:flex;flex-direction:column;align-items:flex-end;gap:7px;position:relative}
+.fy{font-size:11px;letter-spacing:.16em;font-weight:700;color:#cfe0ff;border:1px solid #2e4a85;background:#0d1b3a;padding:5px 12px;border-radius:6px;text-align:right}
+.fy b{display:block;color:var(--amb)}
+.mode{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.mode span{font-size:10.5px;font-weight:700;letter-spacing:.12em;padding:3px 9px;border-radius:99px;border:1px solid #4b5f8a;color:#aebfe0;background:#101c36}
+.mode span:first-child{border-color:#9a6b12;color:#ffd48a;background:#2c1f07}
+.disc{margin:10px 0;padding:7px 12px;border-radius:8px;border:1px dashed #7a5513;background:#2a1e07;color:#ffd9a0;font-size:12px}
+.main{display:grid;grid-template-columns:minmax(0,1.85fr) minmax(310px,1fr);gap:14px;align-items:start}
+.card{background:linear-gradient(180deg,var(--panel),#0c1629);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.card>h3,.card>summary{margin:0;padding:9px 14px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#8fa6cf;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;background:#0d1830;font-weight:700;list-style:none;cursor:default}
+.card>summary{cursor:pointer}
+.card>summary::-webkit-details-marker{display:none}
+.card>summary:after{content:"▾";color:var(--cy);font-size:13px}
+details:not([open])>summary:after{content:"▸"}
+.card .body{padding:12px 14px}
+.legend{display:flex;gap:10px;align-items:center;font-size:10.5px;letter-spacing:.06em;color:#9fb3d9;text-transform:none;font-weight:600;flex-wrap:wrap}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px;vertical-align:-1px}
+.mapwrap{position:relative;background:#0b1424}
+canvas{display:block;width:100%;aspect-ratio:900/580}
+.banner{position:absolute;top:1.6%;left:50%;transform:translateX(-50%);padding:6px 18px;border-radius:10px;text-align:center;border:1px solid;backdrop-filter:blur(3px);min-width:230px;line-height:1.25}
+.banner b{display:block;font-size:14px;letter-spacing:.1em}
+.banner span{font-size:11.5px;font-family:ui-monospace,Consolas,monospace}
+.banner.ok{background:#052416cc;border-color:#14633b;color:#7ff0b0}
+.banner.em{background:#3a0b0ee0;border-color:#ff5a5a;color:#ffb3b3;animation:bem 1s infinite alternate;box-shadow:0 0 22px #ef444477}
+.banner.done{background:#0a2a3acc;border-color:#2a8fbf;color:#9fe0ff}
+@keyframes bem{from{box-shadow:0 0 6px #ef444455}to{box-shadow:0 0 28px #ef4444cc}}
+.ambp{position:absolute;left:1.2%;bottom:1.8%;width:25%;min-width:196px;background:#070e1de6;border:1px solid #2a4170;border-radius:9px;padding:7px 10px;font-size:11px;line-height:1.55}
+.ambp h4{margin:0 0 3px;font-size:10.5px;letter-spacing:.14em;color:var(--cy)}
+.ambp div{display:flex;justify-content:space-between;gap:8px}
+.ambp div span:first-child{color:var(--mut)}
+.ambp div span:last-child{font-weight:700;text-align:right}
+.simtag{position:absolute;right:1.2%;bottom:1.8%;font-size:10px;letter-spacing:.14em;font-weight:700;color:#ffd48a;background:#2c1f07cc;border:1px solid #7a5513;padding:3px 9px;border-radius:99px}
+.ctrl{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:12px 14px;border-top:1px solid var(--line);background:#0b1426}
+.ctrl label{font-size:10.5px;letter-spacing:.12em;color:var(--mut);font-weight:700;display:block;margin-bottom:3px}
+select{background:#0f1c36;border:1px solid #2a4170;border-radius:8px;padding:9px 10px;font-size:13px;min-width:220px;outline:none}
+select.attn{border-color:#ffcf5a;box-shadow:0 0 0 3px #ffcf5a44}
+.btn{background:#13213c;border:1px solid #2a4170;padding:9px 13px;border-radius:9px;cursor:pointer;font-weight:600;font-size:12.5px;color:var(--text);font-family:inherit}
+.btn:hover:not(:disabled){border-color:var(--cy)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.sos{background:linear-gradient(180deg,#ff4a4a,#c01818);border:1px solid #ff9a9a;color:#fff;font-size:17px;font-weight:800;letter-spacing:.06em;padding:12px 22px;border-radius:12px;cursor:pointer;font-family:inherit;box-shadow:0 0 0 0 #ef444488;animation:pulse 1.8s infinite}
+.sos:disabled{animation:none;background:#4d1717;border-color:#7d2a2a;color:#ffb4b4;cursor:not-allowed}
+@keyframes pulse{70%{box-shadow:0 0 0 14px #ef444400}100%{box-shadow:0 0 0 0 #ef444400}}
+.spacer{flex:1}
+.hint{font-size:12px;color:#ffd48a;min-height:16px;padding:0 14px 8px;background:#0b1426}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:7px 12px;margin:0;font-size:12.5px}
+.kv dt{color:var(--mut);font-size:11px;letter-spacing:.08em;text-transform:uppercase;align-self:center}
+.kv dd{margin:0;text-align:right;font-weight:600}
+.chip{display:inline-block;padding:2px 10px;border-radius:99px;font-size:11px;font-weight:700;letter-spacing:.07em;border:1px solid}
+.c-ok{color:#4ade80;background:#06281a;border-color:#14633b}
+.c-em{color:#ff9a9a;background:#3a0f12;border-color:#a32b2b;animation:blink 1s infinite}
+.c-blue{color:#a8d4ff;background:#0d2347;border-color:#2c6fd1;box-shadow:0 0 10px #3b9bff66}
+.c-mut{color:#9db0d0;background:#13203a;border-color:#2a3b60}
+.c-amb{color:#ffd68a;background:#33240a;border-color:#7a5513}
+.c-cy{color:#7fd6ff;background:#082a3a;border-color:#19607f}
+@keyframes blink{50%{opacity:.55}}
+.jlist{display:flex;flex-direction:column;gap:7px}
+.jrow{display:grid;grid-template-columns:44px 1fr auto;align-items:center;gap:8px;padding:6px 8px;border:1px solid #1c2c4e;border-radius:8px;background:#0b1527}
+.jrow .jn{font-weight:800;letter-spacing:.06em}
+.jrow .jd{font-size:11px;color:var(--mut)}
+.jrow.em{border-color:#2c6fd1;background:#0b1d3b;box-shadow:0 0 14px #3b9bff44 inset}
+ol.steps{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:3px;font-size:12px;max-height:290px;overflow:auto}
+ol.steps li{display:grid;grid-template-columns:22px 1fr;gap:6px;padding:3px 6px;border-radius:6px;color:#6f84ab}
+ol.steps li i{font-style:normal;font-weight:700;font-size:10.5px;color:#4f6590;text-align:center;padding-top:1px}
+ol.steps li.done{color:#9fb3d9}
+ol.steps li.done i{color:#4ade80}
+ol.steps li.now{background:#0f2a52;color:#fff;border:1px solid #2c6fd1}
+ol.steps li.now i{color:var(--cy)}
+.grid2{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:14px;margin-top:14px}
+.chain{width:100%;height:auto;display:block}
+.nd rect{fill:#0e1a33;stroke:#27406e;stroke-width:1.3;rx:8}
+.nd.on rect{stroke:#38bdf8;fill:#10305c;filter:drop-shadow(0 0 5px #38bdf8aa)}
+.t1{font:700 11px "Segoe UI",sans-serif;fill:#e2ecff;text-anchor:middle}
+.t2{font:9px "Segoe UI",sans-serif;fill:#8fa6cc;text-anchor:middle}
+.cap{font:700 9.5px "Segoe UI",sans-serif;fill:#6f86b3;letter-spacing:.12em}
+.capline{stroke:#27406e;stroke-width:1}
+.wave path{fill:none;stroke:#4a6aa5;stroke-width:2;stroke-linecap:round;opacity:.35}
+.wave.on path{stroke:#38bdf8;animation:wv .9s infinite}
+.wave.on path:nth-child(2){animation-delay:.15s}
+.wave.on path:nth-child(3){animation-delay:.3s}
+@keyframes wv{0%{opacity:.1}50%{opacity:1}100%{opacity:.1}}
+.pdot{fill:#ff5a5a;filter:drop-shadow(0 0 6px #ff5a5a)}
+.ptxt{font:700 10px ui-monospace,Consolas,monospace;fill:#ffd0d0;text-anchor:middle}
+.vals{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:10px 0}
+.val{border:1px solid #1c2c4e;border-radius:8px;background:#0b1527;padding:6px 9px}
+.val small{display:block;font-size:9.5px;letter-spacing:.12em;color:var(--mut);text-transform:uppercase}
+.val b{font-size:12.5px}
+#log{height:150px;overflow:auto;background:#050a14;border:1px solid #1a2a4a;border-radius:8px;padding:7px 9px;font-size:11px;line-height:1.55}
+#log div{white-space:pre-wrap}
+.k-TX{color:#7fd6ff}.k-RX{color:#4ade80}.k-SIG{color:#8fc4ff}.k-SOS{color:#ff8a8a}.k-SYS{color:#8aa0c8}.k-595{color:#ffd68a}
+.hwrow{display:flex;gap:10px;align-items:stretch;flex-wrap:wrap}
+.hwbox{border:1px solid #27406e;border-radius:9px;background:#0e1a33;padding:8px 11px;font-size:11px;text-align:center;transition:.2s}
+.hwbox b{display:block;font-size:12px;letter-spacing:.04em}
+.hwbox small{color:var(--mut)}
+.hwbox.on{border-color:#38bdf8;background:#10305c;box-shadow:0 0 12px #38bdf866}
+.hwar{align-self:center;color:#4a6aa5;font-size:18px}
+.bits{font-size:13px;letter-spacing:.12em;color:#ffd68a;margin:3px 0}
+.sigs{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:12px}
+.sg{border:1px solid #1c2c4e;border-radius:9px;background:#0a1426;padding:8px 6px;text-align:center}
+.sg.em{border-color:#2c6fd1;box-shadow:0 0 14px #3b9bff55}
+.sg h5{margin:0 0 6px;font-size:10px;letter-spacing:.1em;color:#9db0d0}
+.leds{display:grid;grid-template-columns:repeat(4,1fr);gap:3px}
+.led{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:9px;color:var(--mut)}
+.led i{width:17px;height:17px;border-radius:50%;background:#1a2438;border:1px solid #2b3a5c;display:block;transition:.12s}
+.led.R.on i{background:#ff3b3b;box-shadow:0 0 12px #ff3b3b;border-color:#ff9a9a}
+.led.Y.on i{background:#ffc531;box-shadow:0 0 12px #ffc531;border-color:#ffe28a}
+.led.G.on i{background:#27e07a;box-shadow:0 0 12px #27e07a;border-color:#9affc4}
+.led.B.on i{background:#3b9bff;box-shadow:0 0 14px #3b9bff;border-color:#a8d4ff}
+.sg small{display:block;margin-top:5px;font-size:8.5px;letter-spacing:.06em;color:#6f86b3}
+.note{font-size:11.5px;color:var(--mut);margin:9px 0 0}
+.arch{display:grid;grid-template-columns:1fr 34px 1fr;gap:6px;align-items:stretch}
+.layer{border:1px solid;border-radius:10px;padding:9px;display:flex;flex-direction:column;gap:5px}
+.layer.sw{border-color:#2c6fd1;background:#0a1a36}
+.layer.hw{border-color:#b7801f;background:#201808}
+.layer h5{margin:0 0 3px;font-size:10px;letter-spacing:.14em;text-align:center}
+.layer.sw h5{color:#8fc4ff}.layer.hw h5{color:#ffd48a}
+.an{border:1px solid #2b3d66;background:#0e1a33;border-radius:7px;padding:5px 6px;text-align:center;font-size:11px;font-weight:600;transition:.2s}
+.layer.hw .an{border-color:#6d5320;background:#1b1507}
+.an.on{border-color:#38bdf8;background:#10305c;box-shadow:0 0 10px #38bdf877;color:#fff}
+.layer.hw .an.on{border-color:#ffc86b;background:#4a3508;box-shadow:0 0 10px #ffc86b77}
+.dn{text-align:center;color:#4a6aa5;font-size:11px;line-height:1}
+.mid{display:flex;align-items:center;justify-content:center;writing-mode:vertical-rl;font-size:9.5px;letter-spacing:.12em;color:#8fa6cc;text-align:center}
+.api{display:grid;grid-template-columns:1fr 1.3fr;gap:12px}
+.apibox{border:1px solid #1c2c4e;border-radius:10px;padding:10px;background:#0a1426}
+.apibox.fut{border-style:dashed;border-color:#6b5a8a;background:#120f22}
+.apibox h5{margin:0 0 6px;font-size:10.5px;letter-spacing:.12em}
+.fchain{display:flex;flex-direction:column;gap:3px;align-items:center}
+.fchain div{width:100%;text-align:center;font-size:10.5px;font-weight:600;padding:4px;border:1px dashed #6b5a8a;border-radius:6px;color:#c3b5e6}
+.fchain span{color:#6b5a8a;font-size:10px;line-height:1}
+.foot{margin:14px 0 4px;text-align:center;font-size:11px;color:#6f84ab;letter-spacing:.04em}
+@media(max-width:1100px){.main,.grid2{grid-template-columns:1fr}}
+@media(max-width:760px){h1{font-size:22px}.ambp{position:static;width:auto;border-radius:0;border-width:1px 0 0}.simtag{display:none}.arch{grid-template-columns:1fr}.mid{writing-mode:horizontal-tb;padding:4px}.api{grid-template-columns:1fr}.sigs{grid-template-columns:repeat(2,1fr)}.banner{min-width:0;padding:4px 10px}.banner b{font-size:11px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <div class="brand">
+    <div class="logo"><svg width="34" height="34" viewBox="0 0 34 34" fill="none"><rect x="13" y="5" width="8" height="24" rx="2" fill="#fff"/><rect x="5" y="13" width="24" height="8" rx="2" fill="#fff"/><path d="M4 6a16 16 0 0 1 8-3M30 6a16 16 0 0 0-8-3" stroke="#ffd0d0" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+    <div>
+      <h1>RAKSHAK YOJNA</h1>
+      <div class="sub">IoT-Based Smart Emergency Vehicle Traffic Signal Preemption System</div>
+      <div class="tagline">“Emergency Route-Based Intelligent Traffic Signal Control”</div>
+    </div>
+  </div>
+  <div class="badges">
+    <div class="fy">FINAL YEAR ENGINEERING PROJECT<b>PROTOTYPE SIMULATION</b></div>
+    <div class="mode"><span>SIMULATION</span><span>PROTOTYPE</span><span>DEMO MODE</span></div>
+  </div>
+</header>
+
+<div class="disc">⚠ Demonstration only. This simulation represents the intended behaviour of the physical <b>ESP32 + SX1278 LoRa + 74HC595</b> prototype. It does not control real city traffic. RSSI and timing values are simulated.</div>
+
+<div class="main">
+  <section>
+    <div class="card">
+      <h3><span>Smart-city route map · top view</span>
+        <span class="legend"><span><i class="dot" style="background:#ff3b3b"></i>RED</span><span><i class="dot" style="background:#ffc531"></i>YELLOW</span><span><i class="dot" style="background:#27e07a"></i>GREEN</span><span><i class="dot" style="background:#3b9bff;box-shadow:0 0 6px #3b9bff"></i>BLUE = EMERGENCY PRIORITY <em style="font-weight:400;color:#7d92b8">(prototype indicator, not a standard signal colour)</em></span></span>
+      </h3>
+      <div class="mapwrap">
+        <canvas id="cv" width="900" height="580"></canvas>
+        <div id="banner" class="banner ok"><b>SYSTEM STATUS: NORMAL</b><span>EMERGENCY MODE: OFF</span></div>
+        <div class="ambp mono" id="ambp">
+          <h4>AMBULANCE UNIT</h4>
+          <div><span>Status</span><span id="aStatus">STANDBY</span></div>
+          <div><span>Destination</span><span id="aDest">—</span></div>
+          <div><span>Route</span><span id="aRoute">—</span></div>
+          <div><span>Current Junction</span><span id="aCur">—</span></div>
+          <div><span>Emergency</span><span id="aEm">OFF</span></div>
+        </div>
+        <div class="simtag">SIMULATION · PROTOTYPE · DEMO MODE</div>
+      </div>
+      <div class="ctrl">
+        <div><label for="selHosp">SELECT DESTINATION HOSPITAL</label>
+          <select id="selHosp">
+            <option value="">— Select hospital —</option>
+            <option value="city">City Hospital</option>
+            <option value="gov">Government Hospital</option>
+            <option value="emc">Emergency Medical Center</option>
+          </select></div>
+        <button class="sos" id="sosBtn">🚨 ACTIVATE SOS</button>
+        <div class="spacer"></div>
+        <button class="btn" id="normBtn" title="Ambulance drives the route and obeys every signal">Drive without SOS</button>
+        <button class="btn" id="autoBtn" title="Selects City Hospital and presses SOS automatically">▶ Auto demo</button>
+        <button class="btn" id="resetBtn">↺ Reset</button>
+        <div><label for="selSpeed">SPEED</label>
+          <select id="selSpeed" style="min-width:80px"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="1.5">1.5×</option><option value="2">2×</option></select></div>
+      </div>
+      <div class="hint" id="hint"></div>
+    </div>
+  </section>
+
+  <aside style="display:flex;flex-direction:column;gap:14px">
+    <div class="card">
+      <h3>Control panel <span class="chip c-mut" style="letter-spacing:.1em">DEMO MODE</span></h3>
+      <div class="body">
+        <dl class="kv">
+          <dt>System status</dt><dd id="dSys"></dd>
+          <dt>Emergency mode</dt><dd id="dEmode"></dd>
+          <dt>Ambulance status</dt><dd id="dAmb"></dd>
+          <dt>Destination</dt><dd id="dDest"></dd>
+          <dt>Current junction</dt><dd id="dCur"></dd>
+          <dt>Route</dt><dd id="dRoute" class="mono"></dd>
+          <dt>SOS status</dt><dd id="dSos"></dd>
+          <dt>LoRa status</dt><dd id="dLora"></dd>
+          <dt>Packet status</dt><dd id="dPkt"></dd>
+        </dl>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Junction status</h3>
+      <div class="body"><div class="jlist" id="jlist"></div></div>
+    </div>
+    <div class="card">
+      <h3>Demonstration sequence</h3>
+      <div class="body"><ol class="steps" id="steps"></ol></div>
+    </div>
+  </aside>
+</div>
+
+<div class="grid2">
+  <div class="card">
+    <h3>LoRa communication · ambulance unit → junction unit <span class="chip c-cy">SIMULATED LINK</span></h3>
+    <div class="body">
+      <svg class="chain" viewBox="0 0 760 132" role="img" aria-label="Communication chain from ESP32 transmitter to traffic signal">
+        <defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="#4a6aa5"/></marker></defs>
+        <text x="0" y="11" class="cap">AMBULANCE UNIT</text><line x1="0" y1="17" x2="202" y2="17" class="capline"/>
+        <text x="318" y="11" class="cap">JUNCTION UNIT (RECEIVER SIDE)</text><line x1="318" y1="17" x2="756" y2="17" class="capline"/>
+        <g class="nd" id="n_tx"><rect x="0" y="30" width="92" height="48"/><text x="46" y="50" class="t1">ESP32</text><text x="46" y="65" class="t2">TRANSMITTER</text></g>
+        <g class="nd" id="n_ltx"><rect x="118" y="30" width="84" height="48"/><text x="160" y="50" class="t1">SX1278</text><text x="160" y="65" class="t2">LoRa TX</text></g>
+        <g class="nd" id="n_lrx"><rect x="318" y="30" width="84" height="48"/><text x="360" y="50" class="t1">SX1278</text><text x="360" y="65" class="t2">LoRa RX</text></g>
+        <g class="nd" id="n_erx"><rect x="428" y="30" width="92" height="48"/><text x="474" y="50" class="t1">ESP32</text><text x="474" y="65" class="t2">RECEIVER</text></g>
+        <g class="nd" id="n_595"><rect x="546" y="30" width="84" height="48"/><text x="588" y="50" class="t1">74HC595</text><text x="588" y="65" class="t2">SHIFT REG.</text></g>
+        <g class="nd" id="n_sig"><rect x="656" y="30" width="100" height="48"/><text x="706" y="50" class="t1">TRAFFIC</text><text x="706" y="65" class="t2">SIGNAL LEDs</text></g>
+        <g stroke="#4a6aa5" stroke-width="1.5" marker-end="url(#ah)" fill="none">
+          <line x1="92" y1="54" x2="116" y2="54"/><line x1="402" y1="54" x2="426" y2="54"/><line x1="520" y1="54" x2="544" y2="54"/><line x1="630" y1="54" x2="654" y2="54"/>
+        </g>
+        <line x1="204" y1="54" x2="316" y2="54" stroke="#35508a" stroke-width="1.3" stroke-dasharray="4 5"/>
+        <g class="wave" id="wave"><path d="M232 42 Q242 54 232 66"/><path d="M252 36 Q266 54 252 72"/><path d="M272 30 Q290 54 272 78"/></g>
+        <text x="260" y="96" class="t2">WIRELESS COMMUNICATION · 433 MHz</text>
+        <circle id="pdot" class="pdot" r="6" cx="46" cy="54" style="display:none"/>
+        <text id="ptxt" class="ptxt" x="46" y="116"></text>
+      </svg>
+      <div class="vals">
+        <div class="val"><small>LoRa status</small><b style="color:#4ade80">● CONNECTED</b></div>
+        <div class="val"><small>Frequency</small><b class="mono">433 MHz</b></div>
+        <div class="val"><small>Packet status</small><b id="cPkt">WAITING</b></div>
+        <div class="val"><small>RSSI (simulated)</small><b id="cRssi" class="mono">-- dBm</b></div>
+        <div class="val"><small>Packet sent</small><b id="cSent" class="mono">—</b></div>
+      </div>
+      <div id="log" class="mono"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Receiver hardware · 16-LED representation <span class="chip c-amb">PROTOTYPE</span></h3>
+    <div class="body">
+      <div class="hwrow">
+        <div class="hwbox" id="hwEsp"><b>ESP32 RECEIVER</b><small>junction-side controller</small></div>
+        <div class="hwar">➜</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div class="hwbox" id="reg1"><b>74HC595 #1</b><div class="bits mono" id="bits1">00000000</div><small>Q7…Q0 · Signal 2 | Signal 1</small></div>
+          <div class="hwbox" id="reg2"><b>74HC595 #2</b><div class="bits mono" id="bits2">00000000</div><small>Q7…Q0 · Signal 4 | Signal 3</small></div>
+        </div>
+        <div class="hwar">➜</div>
+        <div class="hwbox" style="align-self:center"><b>16 LEDs</b><small>4 signals × (R, Y, G, B)</small></div>
+      </div>
+      <div class="sigs" id="sigs"></div>
+      <p class="note">BLUE LED = <b>EMERGENCY PRIORITY</b>. Only the signal of the junction named in the received packet lights its blue LED. In emergency state the receiver also forces that signal's GREEN LED on (clear path) and clears RED/YELLOW. Bit mapping is illustrative.</p>
+    </div>
+  </div>
+</div>
+
+<div class="grid2" style="grid-template-columns:minmax(0,1.25fr) minmax(0,1fr)">
+  <details class="card" open>
+    <summary>System architecture · software layer + hardware layer</summary>
+    <div class="body">
+      <div class="arch">
+        <div class="layer sw">
+          <h5>SOFTWARE LAYER</h5>
+          <div class="an" id="a_driver">DRIVER</div><div class="dn">▼</div>
+          <div class="an" id="a_web">WEB APPLICATION</div><div class="dn">▼</div>
+          <div class="an" id="a_hosp">HOSPITAL SELECTION</div><div class="dn">▼</div>
+          <div class="an" id="a_route">ROUTE GENERATION</div><div class="dn">▼</div>
+          <div class="an" id="a_jid">JUNCTION IDENTIFICATION</div>
+        </div>
+        <div class="mid">JUNCTION ID ➜ ESP32</div>
+        <div class="layer hw">
+          <h5>HARDWARE LAYER</h5>
+          <div class="an" id="h_tx">ESP32 TRANSMITTER</div><div class="dn">▼</div>
+          <div class="an" id="h_ltx">SX1278 LoRa</div><div class="dn">▼ wireless ▼</div>
+          <div class="an" id="h_lrx">SX1278 LoRa</div><div class="dn">▼</div>
+          <div class="an" id="h_erx">ESP32 RECEIVER</div><div class="dn">▼</div>
+          <div class="an" id="h_595">74HC595</div><div class="dn">▼</div>
+          <div class="an" id="h_sig">TRAFFIC SIGNAL LEDs</div>
+        </div>
+      </div>
+      <p class="note"><b>Software</b> determines the emergency route and the junction IDs on it. The <b>embedded hardware</b> carries the emergency command over LoRa and drives the traffic-signal LEDs.</p>
+    </div>
+  </details>
+
+  <div class="card">
+    <h3>Live location / route API</h3>
+    <div class="body">
+      <div class="api">
+        <div class="apibox">
+          <h5 style="color:#4ade80">CURRENT PROTOTYPE</h5>
+          <div class="chip c-ok" style="margin-bottom:8px">ACTIVE IN THIS DEMO</div>
+          <div style="font-weight:700;font-size:13px">PREDEFINED JUNCTION IDs</div>
+          <p class="note" style="margin-top:6px">Junction IDs (J1…J4) are fixed in software for each route. This validates the ESP32 → LoRa → ESP32 → 74HC595 hardware logic. No GPS or map API is connected to the ESP32.</p>
+        </div>
+        <div class="apibox fut">
+          <h5 style="color:#c3b5e6">FUTURE INTEGRATION</h5>
+          <div class="chip" style="margin-bottom:8px;color:#d6c8f5;border-color:#6b5a8a;background:#1a1530">NOT CONNECTED · PLANNED</div>
+          <div class="fchain">
+            <div>LIVE GPS / LOCATION API</div><span>▼</span>
+            <div>REAL-TIME POSITION</div><span>▼</span>
+            <div>ROUTE PROCESSING</div><span>▼</span>
+            <div>DYNAMIC JUNCTION ID</div><span>▼</span>
+            <div>ESP32 TRANSMITTER</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="foot">RAKSHAK YOJNA · Final Year Engineering Project · Prototype simulation · Not connected to real traffic infrastructure</div>
+</div>
+
+<script>
+(function(){
+'use strict';
+/* ===================== constants ===================== */
+const W=900,H=580,HALF=30,LANE=15,CYC=13;
+const HY=[150,400],VX=[250,650];
+const $=id=>document.getElementById(id);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const ANG={E:0,S:Math.PI/2,W:Math.PI,N:-Math.PI/2};
+const LEFTV={E:[0,-1],W:[0,1],N:[-1,0],S:[1,0]};
+function rng(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+
+const JUNCS=[
+ {id:'J1',n:1,x:250,y:400,off:0,   card:[38,50]},
+ {id:'J2',n:2,x:650,y:400,off:4.3, card:[52,-100]},
+ {id:'J3',n:3,x:650,y:150,off:8.2, card:[-200,40]},
+ {id:'J4',n:4,x:250,y:150,off:11.1,card:[52,-92]}
+];
+const JBY={};JUNCS.forEach(j=>JBY[j.id]=j);
+
+const HOSP={
+ city:{name:'City Hospital',label:'CITY HOSPITAL',rect:[735,18,150,100],side:'S',ent:[810,118],ids:['J1','J2','J3'],pts:[[30,385],[635,385],[635,135],[810,135],[810,121]]},
+ gov:{name:'Government Hospital',label:'GOVERNMENT HOSPITAL',rect:[15,18,150,100],side:'S',ent:[90,118],ids:['J1','J4'],pts:[[30,385],[235,385],[235,165],[90,165],[90,121]]},
+ emc:{name:'Emergency Medical Center',label:'EMERGENCY MEDICAL CENTER',rect:[715,505,160,70],side:'W',ent:[715,540],ids:['J1','J2'],pts:[[30,385],[665,385],[665,540],[712,540]]}
+};
+
+/* ===================== path helpers ===================== */
+function buildPath(pts,r){
+  const raw=[{x:pts[0][0],y:pts[0][1]}];
+  for(let i=1;i<pts.length-1;i++){
+    const [x0,y0]=pts[i-1],[x1,y1]=pts[i],[x2,y2]=pts[i+1];
+    let v1x=x0-x1,v1y=y0-y1;const l1=Math.hypot(v1x,v1y);v1x/=l1;v1y/=l1;
+    let v2x=x2-x1,v2y=y2-y1;const l2=Math.hypot(v2x,v2y);v2x/=l2;v2y/=l2;
+    const rr=Math.min(r,l1/2,l2/2);
+    const ax=x1+v1x*rr,ay=y1+v1y*rr,bx=x1+v2x*rr,by=y1+v2y*rr;
+    for(let k=0;k<=10;k++){const t=k/10,u=1-t;raw.push({x:u*u*ax+2*u*t*x1+t*t*bx,y:u*u*ay+2*u*t*y1+t*t*by});}
+  }
+  const last=pts[pts.length-1];raw.push({x:last[0],y:last[1]});
+  const out=[raw[0]];
+  for(let i=1;i<raw.length;i++){
+    const a=raw[i-1],b=raw[i];const d=Math.hypot(b.x-a.x,b.y-a.y);const n=Math.max(1,Math.ceil(d/4));
+    for(let k=1;k<=n;k++)out.push({x:a.x+(b.x-a.x)*k/n,y:a.y+(b.y-a.y)*k/n});
+  }
+  let acc=0;out[0].d=0;
+  for(let i=1;i<out.length;i++){acc+=Math.hypot(out[i].x-out[i-1].x,out[i].y-out[i-1].y);out[i].d=acc;}
+  return {pts:out,len:acc};
+}
+function pathAt(P,s){
+  s=clamp(s,0,P.len);let lo=0,hi=P.pts.length-1;
+  while(hi-lo>1){const m=(lo+hi)>>1;if(P.pts[m].d<=s)lo=m;else hi=m;}
+  const a=P.pts[lo],b=P.pts[hi];const dd=b.d-a.d;const t=dd>0?(s-a.d)/dd:0;
+  return {x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t};
+}
+function headingAt(P,s){const a=pathAt(P,s-4),b=pathAt(P,s+4);return Math.atan2(b.y-a.y,b.x-a.x);}
+function angDir(a){const c=Math.cos(a),s=Math.sin(a);return Math.abs(c)>Math.abs(s)?(c>0?'E':'W'):(s>0?'S':'N');}
+function trace(c,P,s0,s1){
+  if(s1<=s0)return;const a=pathAt(P,s0);c.beginPath();c.moveTo(a.x,a.y);
+  for(const p of P.pts){if(p.d>s0&&p.d<s1)c.lineTo(p.x,p.y);}
+  const b=pathAt(P,s1);c.lineTo(b.x,b.y);
+}
+function makeRoute(key){
+  const h=HOSP[key];const path=buildPath(h.pts,22);
+  const juncs=h.ids.map(id=>{
+    const j=JBY[id];let best=0,bd=1e9;
+    for(const p of path.pts){const d=Math.hypot(p.x-j.x,p.y-j.y);if(d<bd){bd=d;best=p.d;}}
+    const dir=angDir(headingAt(path,best-70));
+    let stop=best-50;
+    for(const p of path.pts){
+      if(p.d<best-150)continue;
+      const ok=dir==='E'?p.x>=j.x-50:dir==='W'?p.x<=j.x+50:dir==='S'?p.y>=j.y-50:p.y<=j.y+50;
+      if(ok){stop=p.d;break;}
+    }
+    return {id,jd:best,dir,stop};
+  });
+  return {key,h,path,juncs};
+}
+
+/* ===================== state ===================== */
+const S={t:0,rt:0,speed:1,hosp:'',selected:false,route:null,reveal:0,sos:false,ended:false,endT:null,
+ amb:null,J:{},pkt:null,lastText:'',pktStatus:'WAITING',rssi:null,rssiT:0,sent:{},stepKeys:[],stepReached:1,flash:{},autoT:null,clk:0};
+
+function fmt(t){const m=Math.floor(t/60),s=t-m*60;return String(m).padStart(2,'0')+':'+(s<10?'0':'')+s.toFixed(1);}
+function log(kind,msg){
+  const el=$('log');const d=document.createElement('div');d.className='k-'+kind;
+  d.textContent='['+fmt(S.clk)+'] '+kind.padEnd(3,' ')+'  '+msg;el.appendChild(d);
+  while(el.children.length>60)el.removeChild(el.firstChild);el.scrollTop=el.scrollHeight;
+}
+function fl(id,dur){S.flash[id]=S.rt+dur;}
+function isFl(id){return (S.flash[id]||0)>S.rt;}
+
+function buildSteps(){
+  const r=S.route,n=r.juncs.length,k=[],t=[];
+  const add=(a,b)=>{k.push(a);t.push(b);};
+  add('init','System starts in NORMAL mode');
+  add('select','Driver selects destination hospital');
+  add('route','Route: START → '+r.juncs.map(x=>x.id).join(' → ')+' → HOSPITAL');
+  add('sos','Driver presses ACTIVATE SOS');
+  add('active','EMERGENCY ACTIVE');
+  add('moving','Ambulance starts moving');
+  r.juncs.forEach((x,i)=>{
+    add('send'+i,'Send EMERGENCY,'+x.id+' → '+x.id+' emergency priority');
+    if(i<n-1)add('pass'+i,'Ambulance crosses '+x.id+' → '+x.id+' back to NORMAL');
+  });
+  add('arrive','Ambulance reaches '+r.h.label);
+  add('end','Emergency mode ends · all junctions NORMAL');
+  S.stepKeys=k;S.stepTexts=t;
+}
+function adv(key){const i=S.stepKeys.indexOf(key);if(i>=0&&i+1>S.stepReached)S.stepReached=i+1;}
+
+function syncAmb(){
+  const A=S.amb,P=S.route.path;const p=pathAt(P,A.s);A.x=p.x;A.y=p.y;A.ang=headingAt(P,A.s);
+}
+function resetSim(){
+  S.sos=false;S.ended=false;S.endT=null;S.pkt=null;S.lastText='';S.pktStatus='WAITING';S.rssi=null;S.sent={};S.autoT=null;S.clk=0;
+  S.amb={s:20,v:0,state:'WAITING',blocked:false,x:0,y:0,ang:0};
+  JUNCS.forEach(j=>S.J[j.id]={em:false,emDir:null,status:'NORMAL',done:false});
+  S.stepReached=1;$('log').innerHTML='';
+  log('SYS','System initialised · NORMAL MODE · EMERGENCY MODE OFF');
+  log('SYS','LoRa SX1278 link ready (433 MHz) · simulated');
+  syncAmb();
+}
+function setHospital(key,user){
+  if(!key){S.selected=false;S.hosp='';S.route=makeRoute('city');buildSteps();resetSim();S.reveal=0;return;}
+  S.hosp=key;S.selected=true;S.route=makeRoute(key);buildSteps();resetSim();S.reveal=0;
+  if(user){
+    adv('select');adv('route');
+    log('SYS','Destination selected: '+S.route.h.name);
+    log('SYS','Route generated: START → '+S.route.juncs.map(x=>x.id).join(' → ')+' → '+S.route.h.label);
+    log('SYS','Junction IDs identified on route: '+S.route.juncs.map(x=>x.id).join(', '));
+    ['sel'].forEach(k=>fl(k,1.6));
+  }
+}
+function hint(msg){
+  const h=$('hint');h.textContent=msg;const s=$('selHosp');s.classList.add('attn');
+  clearTimeout(hint.t);hint.t=setTimeout(()=>{h.textContent='';s.classList.remove('attn');},3500);
+}
+function activateSOS(){
+  if(!S.selected){hint('Step 2: select a destination hospital first, then press ACTIVATE SOS.');return;}
+  if(S.amb.state==='ARRIVED'||S.ended){const k=S.hosp;setHospital(k,true);}
+  if(S.sos)return;
+  S.sos=true;S.autoT=null;
+  adv('select');adv('route');adv('sos');adv('active');
+  log('SOS','SOS ACTIVATED · EMERGENCY ACTIVE');
+  log('SOS','Emergency route: START → '+S.route.juncs.map(x=>x.id).join(' → ')+' → '+S.route.h.label);
+  fl('sos',1.5);
+  if(S.amb.state==='WAITING')S.amb.state='MOVING';
+  adv('moving');
+  log('SYS','Ambulance moving toward '+S.route.h.name);
+}
+function driveNormal(){
+  if(!S.selected){hint('Select a destination hospital first.');return;}
+  if(S.amb.state==='ARRIVED'||S.ended){setHospital(S.hosp,true);}
+  if(S.amb.state==='WAITING'){S.amb.state='MOVING';log('SYS','Normal drive (no SOS): ambulance obeys all signals');}
+}
+function autoDemo(){
+  $('selHosp').value='city';setHospital('city',true);S.autoT=2.4;
+  log('SYS','AUTO DEMO: SOS will be pressed in a moment…');
+}
+
+/* ===================== lights ===================== */
+function lightFor(st,jd,dir){
+  if(st.em)return dir===st.emDir?'G':'R';
+  const ph=(S.t+jd.off)%CYC;
+  if(dir==='E'||dir==='W')return ph<5?'G':ph<6.5?'Y':'R';
+  return ph<6.5?'R':ph<11.5?'G':'Y';
+}
+function ledState(k){
+  const jd=JUNCS[k],st=S.J[jd.id];
+  if(st.em)return {R:0,Y:0,G:1,B:1};
+  const a=lightFor(st,jd,'E');
+  return {R:a==='R'?1:0,Y:a==='Y'?1:0,G:a==='G'?1:0,B:0};
+}
+
+/* ===================== traffic ===================== */
+const lanes=[];
+function initCars(){
+  const rnd=rng(21);
+  const cols=['#8aa4c8','#c0c8d6','#d4a15a','#7fb08c','#b86a6a','#9a8fd0','#e2e6ee','#6f8fb5'];
+  const defs=[];
+  HY.forEach(y=>{defs.push({dir:'E',c:y-LANE,hor:true,road:y});defs.push({dir:'W',c:y+LANE,hor:true,road:y});});
+  VX.forEach(x=>{defs.push({dir:'N',c:x-LANE,hor:false,road:x});defs.push({dir:'S',c:x+LANE,hor:false,road:x});});
+  defs.forEach(l=>{
+    l.L=(l.hor?W:H)+100;l.cars=[];l.stops=[];
+    JUNCS.forEach(j=>{
+      if(l.hor&&j.y===l.road)l.stops.push({jid:j.id,q:l.dir==='E'?j.x:W-j.x});
+      if(!l.hor&&j.x===l.road)l.stops.push({jid:j.id,q:l.dir==='S'?j.y:H-j.y});
+    });
+    const n=l.hor?4:3;const startI=(l.dir==='E'&&l.c===385)?1:0;
+    for(let i=startI;i<n;i++){
+      l.cars.push({q:(i+0.25+rnd()*0.4)*l.L/n,v:0,vmax:38+rnd()*22,col:cols[Math.floor(rnd()*cols.length)],yo:0,brk:false,x:0,y:0});
+    }
+    lanes.push(l);
+  });
+}
+function lanePos(l,q){
+  if(l.hor)return {x:l.dir==='E'?-50+q:W+50-q,y:l.c};
+  return {x:l.c,y:l.dir==='S'?-50+q:H+50-q};
+}
+function updateCars(dt){
+  const A=S.amb;let ad=null,ca=0,sa=0;
+  if(S.sos&&A.state==='MOVING'){ad=angDir(A.ang);ca=Math.cos(A.ang);sa=Math.sin(A.ang);}
+  for(const l of lanes){
+    l.cars.sort((a,b)=>a.q-b.q);
+    const n=l.cars.length;
+    for(let i=0;i<n;i++){
+      const c=l.cars[i];const ah=l.cars[(i+1)%n];
+      const gap=n>1?((ah.q-c.q)+l.L)%l.L-15:1e9;
+      let tgt=c.vmax;
+      tgt=Math.min(tgt,Math.max(0,gap-6)*2.5);
+      let ds=1e9,sj=null;
+      for(const st of l.stops){const d=st.q-c.q;if(d>=-3&&d<ds){ds=d;sj=st;}}
+      if(sj&&ds<120){
+        const L=lightFor(S.J[sj.jid],JBY[sj.jid],l.dir);
+        if(L==='R'||(L==='Y'&&ds>16))tgt=Math.min(tgt,Math.max(0,ds-9)*2.4);
+      }
+      const p0=lanePos(l,c.q);
+      let yt=0;
+      if(ad&&l.dir===ad){
+        const rel=(p0.x-A.x)*ca+(p0.y-A.y)*sa,lat=-(p0.x-A.x)*sa+(p0.y-A.y)*ca;
+        if(rel>-10&&rel<170&&Math.abs(lat)<20){yt=12;if(rel>0)tgt=Math.min(tgt,24);}
+      }
+      c.yo+=(yt-c.yo)*Math.min(1,dt*4);
+      const pv=c.v;
+      c.v+=clamp(tgt-c.v,-95*dt,40*dt);
+      c.brk=c.v<pv-0.05||c.v<c.vmax*0.3;
+      c.q+=c.v*dt;
+      if(c.q>=l.L)c.q-=l.L;
+      const p=lanePos(l,c.q),lv=LEFTV[l.dir];
+      c.x=p.x+lv[0]*c.yo;c.y=p.y+lv[1]*c.yo;
+    }
+  }
+}
+
+/* ===================== ambulance + packets ===================== */
+const PD=[0.25,0.7,0.25,0.25];
+function pktStage(t){let a=0;for(let i=0;i<4;i++){a+=PD[i];if(t<a)return i;}return 4;}
+function startPacket(rj,k){
+  const A=S.amb,j=JBY[rj.id];
+  const dist=Math.hypot(j.x-A.x,j.y-A.y);
+  const rssi=Math.round(-58-dist*0.085+(Math.random()*4-2));
+  S.pkt={jid:rj.id,k,t:0,rssi,text:'EMERGENCY,'+rj.id,rx:false,lat:false};
+  S.lastText=S.pkt.text;S.pktStatus='SENT';S.sent[rj.id]=true;
+  log('TX','TRANSMITTING: '+S.pkt.text);
+  log('TX','ESP32 TX → SX1278 → 433 MHz · packet SENT');
+  adv('send'+k);fl('jid',1.2);
+}
+function updatePacket(dt){
+  const p=S.pkt;if(!p)return;
+  p.t+=dt;const st=pktStage(p.t);
+  if(st>=2&&!p.rx){p.rx=true;S.pktStatus='RECEIVED';log('RX','SX1278 RX → ESP32 RX: '+p.text+'  (RSSI '+p.rssi+' dBm)');}
+  if(st>=3&&!p.lat){p.lat=true;log('595','74HC595 latch → Signal '+JBY[p.jid].n+' BLUE LED = 1');}
+  if(st>=4){
+    const rj=S.route.juncs.find(x=>x.id===p.jid),js=S.J[p.jid];
+    if(rj&&!js.done){js.em=true;js.emDir=rj.dir;js.status='EMERGENCY';log('SIG',p.jid+': EMERGENCY PRIORITY ACTIVE · cross traffic stopped');fl('sig',1);}
+    S.pkt=null;
+  }
+}
+function arrive(){
+  const A=S.amb;A.state='ARRIVED';A.v=0;
+  log('SYS','Ambulance ARRIVED at '+S.route.h.label);adv('arrive');
+  if(S.sos)S.endT=2.8;
+}
+function endEmergency(){
+  S.sos=false;S.ended=true;S.endT=null;S.pkt=null;S.pktStatus='WAITING';S.rssi=null;
+  JUNCS.forEach(j=>{const s=S.J[j.id];s.em=false;s.emDir=null;s.status='NORMAL';});
+  adv('end');
+  log('SYS','EMERGENCY MODE ENDED · all junctions returned to NORMAL traffic operation');
+}
+function updateAmb(dt){
+  const A=S.amb,r=S.route,P=r.path;
+  if(A.state!=='MOVING'){return;}
+  let tgt=S.sos?108:80;A.blocked=false;
+  const nj=r.juncs.find(x=>!S.J[x.id].done);
+  if(nj){
+    const d=nj.stop-12-A.s;
+    if(d>-8&&d<140){
+      const L=lightFor(S.J[nj.id],JBY[nj.id],nj.dir);
+      if(L==='R'||(L==='Y'&&d>22)){tgt=Math.min(tgt,Math.max(0,d)*2.4);if(d<8)A.blocked=true;}
+    }
+  }
+  const h1=headingAt(P,A.s-14),h2=headingAt(P,A.s+14);
+  const dh=Math.abs(Math.atan2(Math.sin(h2-h1),Math.cos(h2-h1)));
+  if(dh>0.5)tgt=Math.min(tgt,60);
+  tgt=Math.min(tgt,(P.len-A.s)*2.2+8);
+  if(!S.sos){
+    const ca=Math.cos(A.ang),sa=Math.sin(A.ang),ad=angDir(A.ang);
+    for(const l of lanes){if(l.dir!==ad)continue;for(const c of l.cars){
+      const rel=(c.x-A.x)*ca+(c.y-A.y)*sa,lat=-(c.x-A.x)*sa+(c.y-A.y)*ca;
+      if(rel>0&&rel<90&&Math.abs(lat)<10){tgt=Math.min(tgt,Math.max(0,rel-24)*2.5);}
+    }}
+  }
+  A.v+=clamp(tgt-A.v,-150*dt,55*dt);
+  A.s=Math.min(P.len,A.s+A.v*dt);
+  syncAmb();
+  /* junction passed? */
+  r.juncs.forEach((rj,k)=>{
+    const st=S.J[rj.id];
+    if(!st.done&&A.s>rj.jd+40){
+      st.done=true;
+      if(st.em||S.sos){st.em=false;st.emDir=null;st.status='PASSED';log('SIG',rj.id+': ambulance passed → NORMAL MODE');}
+      if(k<r.juncs.length-1)adv('pass'+k);
+    }
+  });
+  /* packet scheduler: one junction at a time, only the next one on the route */
+  if(S.sos&&!S.pkt){
+    const idx=r.juncs.findIndex(x=>!S.J[x.id].done);
+    if(idx>=0){
+      const rj=r.juncs[idx],st=S.J[rj.id];
+      if(st.status==='NORMAL'&&!S.sent[rj.id]&&rj.jd-A.s<=300)startPacket(rj,idx);
+    }
+  }
+  if(A.s>=P.len-0.5)arrive();
+}
+
+/* ===================== static background ===================== */
+function rr(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();}
+function drawArrow(c,x,y,a){c.save();c.translate(x,y);c.rotate(a);c.fillStyle='rgba(255,255,255,.28)';c.beginPath();c.moveTo(-9,-1.6);c.lineTo(2,-1.6);c.lineTo(2,-5);c.lineTo(10,0);c.lineTo(2,5);c.lineTo(2,1.6);c.lineTo(-9,1.6);c.closePath();c.fill();c.restore();}
+function drawHospital(c,h){
+  const [x,y,w,hh]=h.rect;c.save();
+  c.fillStyle='rgba(0,0,0,.45)';c.fillRect(x+5,y+5,w,hh);
+  const g=c.createLinearGradient(x,y,x,y+hh);g.addColorStop(0,'#f4f7fc');g.addColorStop(1,'#cfd9ea');
+  c.fillStyle=g;rr(c,x,y,w,hh,5);c.fill();c.strokeStyle='#9fb0cc';c.lineWidth=1.2;c.stroke();
+  c.fillStyle='#e3eaf5';c.fillRect(x+8,y+22,w-16,hh-(h.side==='S'?36:30));
+  c.fillStyle='#c81e2d';c.fillRect(x,y,w,16);
+  c.fillStyle='#fff';c.font='bold 9.5px "Segoe UI",Arial';c.textAlign='center';c.textBaseline='middle';c.fillText(h.label,x+w/2,y+8.5);
+  const cx=x+w/2,cy=y+hh/2+(h.side==='S'?3:7);
+  c.fillStyle='#fff';c.beginPath();c.arc(cx,cy,15,0,7);c.fill();c.strokeStyle='#c81e2d';c.lineWidth=2;c.stroke();
+  c.fillStyle='#c81e2d';c.fillRect(cx-9,cy-2.8,18,5.6);c.fillRect(cx-2.8,cy-9,5.6,18);
+  const [ex,ey]=h.ent;
+  c.fillStyle='#c81e2d';
+  if(h.side==='S'){c.fillRect(ex-24,y+hh-9,48,9);c.fillStyle='#fff';c.font='bold 6.5px "Segoe UI",Arial';c.fillText('EMERGENCY',ex,y+hh-4.5);}
+  else{c.fillRect(x-9,ey-22,9,44);c.save();c.translate(x-4.5,ey);c.rotate(-Math.PI/2);c.fillStyle='#fff';c.font='bold 6.5px "Segoe UI",Arial';c.fillText('EMERGENCY',0,0);c.restore();}
+  c.restore();
+}
+function drawStatic(c){
+  const rnd=rng(7);
+  c.fillStyle='#0b1424';c.fillRect(0,0,W,H);
+  const XR=[[0,220],[280,620],[680,900]],YR=[[0,120],[180,370],[430,580]];
+  const reserved=Object.values(HOSP).map(h=>[h.rect[0]-8,h.rect[1]-8,h.rect[2]+16,h.rect[3]+16]);
+  reserved.push([0,340,90,32]);
+  const bcols=['#1c2a47','#21324f','#182541','#26385a','#1f2f4d'];
+  for(const [x0,x1] of XR)for(const [y0,y1] of YR){
+    c.fillStyle='#101b31';c.fillRect(x0,y0,x1-x0,y1-y0);
+    c.strokeStyle='#1b2d50';c.lineWidth=1;c.strokeRect(x0+.5,y0+.5,x1-x0-1,y1-y0-1);
+    const il=x0===0?8:20,ir=x1===W?8:20,it=y0===0?8:20,ib=y1===H?8:20;
+    const ax=x0+il,ay=y0+it,aw=x1-x0-il-ir,ah=y1-y0-it-ib;
+    const cols=Math.max(1,Math.round(aw/62)),rows=Math.max(1,Math.round(ah/50));
+    const cw=aw/cols,ch=ah/rows;
+    for(let i=0;i<cols;i++)for(let j=0;j<rows;j++){
+      const cx=ax+i*cw,cy=ay+j*ch;
+      if(reserved.some(r=>cx<r[0]+r[2]&&cx+cw>r[0]&&cy<r[1]+r[3]&&cy+ch>r[1]))continue;
+      const roll=rnd();
+      if(roll<.12){
+        c.fillStyle='#12311f';rr(c,cx+3,cy+3,cw-6,ch-6,6);c.fill();
+        for(let t=0;t<4;t++){c.fillStyle=t%2?'#1d5a34':'#17482a';c.beginPath();c.arc(cx+8+rnd()*(cw-16),cy+8+rnd()*(ch-16),5+rnd()*3,0,7);c.fill();}
+        continue;
+      }
+      if(roll<.2)continue;
+      const bw=cw-6-rnd()*cw*.25,bh=ch-6-rnd()*ch*.3;
+      const bx=cx+3+rnd()*(cw-6-bw),by=cy+3+rnd()*(ch-6-bh);
+      c.fillStyle='rgba(0,0,0,.4)';c.fillRect(bx+3,by+3,bw,bh);
+      c.fillStyle=bcols[Math.floor(rnd()*bcols.length)];c.fillRect(bx,by,bw,bh);
+      c.strokeStyle='#2f4670';c.lineWidth=1;c.strokeRect(bx+.5,by+.5,bw-1,bh-1);
+      c.fillStyle='#2a3d62';c.fillRect(bx+4,by+4,Math.max(4,bw*.35),Math.max(4,bh*.3));
+      if(rnd()<.5){c.fillStyle='#34507d';c.fillRect(bx+bw-11,by+bh-11,6,6);}
+    }
+  }
+  /* roads */
+  c.fillStyle='#252c3a';
+  HY.forEach(y=>c.fillRect(0,y-HALF,W,HALF*2));
+  VX.forEach(x=>c.fillRect(x-HALF,0,HALF*2,H));
+  c.strokeStyle='#3b4763';c.lineWidth=1;
+  HY.forEach(y=>{c.beginPath();c.moveTo(0,y-HALF+.5);c.lineTo(W,y-HALF+.5);c.moveTo(0,y+HALF-.5);c.lineTo(W,y+HALF-.5);c.stroke();});
+  VX.forEach(x=>{c.beginPath();c.moveTo(x-HALF+.5,0);c.lineTo(x-HALF+.5,H);c.moveTo(x+HALF-.5,0);c.lineTo(x+HALF-.5,H);c.stroke();});
+  JUNCS.forEach(j=>{c.fillStyle='#2a3242';c.fillRect(j.x-HALF,j.y-HALF,HALF*2,HALF*2);});
+  /* centre dashes */
+  c.setLineDash([12,10]);c.strokeStyle='rgba(255,255,255,.5)';c.lineWidth=1.4;
+  HY.forEach(y=>{[[0,220],[280,620],[680,900]].forEach(([a,b])=>{c.beginPath();c.moveTo(a,y);c.lineTo(b,y);c.stroke();});});
+  VX.forEach(x=>{[[0,120],[180,370],[430,580]].forEach(([a,b])=>{c.beginPath();c.moveTo(x,a);c.lineTo(x,b);c.stroke();});});
+  c.setLineDash([]);
+  /* arrows */
+  HY.forEach(y=>[120,450,790].forEach(x=>{drawArrow(c,x,y-LANE,0);drawArrow(c,x,y+LANE,Math.PI);}));
+  VX.forEach(x=>[60,275,505].forEach(y=>{drawArrow(c,x-LANE,y,-Math.PI/2);drawArrow(c,x+LANE,y,Math.PI/2);}));
+  /* crossings + stop lines */
+  JUNCS.forEach(j=>{
+    c.fillStyle='rgba(255,255,255,.72)';
+    for(let o=-27;o<30;o+=6){
+      c.fillRect(j.x-46,j.y+o,14,3);c.fillRect(j.x+32,j.y+o,14,3);
+      c.fillRect(j.x+o,j.y-46,3,14);c.fillRect(j.x+o,j.y+32,3,14);
+    }
+    c.fillStyle='rgba(255,255,255,.9)';
+    c.fillRect(j.x-52,j.y-30,3,30);c.fillRect(j.x+49,j.y,3,30);
+    c.fillRect(j.x,j.y-52,30,3);c.fillRect(j.x-30,j.y+49,30,3);
+  });
+  /* hospitals */
+  Object.values(HOSP).forEach(h=>drawHospital(c,h));
+  /* start marker */
+  c.strokeStyle='#27e07a';c.lineWidth=2;c.setLineDash([4,3]);c.beginPath();c.moveTo(32,372);c.lineTo(32,400);c.stroke();c.setLineDash([]);
+  c.fillStyle='rgba(5,10,20,.8)';rr(c,6,344,56,20,5);c.fill();c.fillStyle='#27e07a';c.font='bold 10px "Segoe UI",Arial';c.textAlign='center';c.textBaseline='middle';c.fillText('▶ START',34,354.5);
+}
+
+/* ===================== canvas + render ===================== */
+const cv=$('cv'),ctx=cv.getContext('2d');const bg=document.createElement('canvas');
+function resize(){
+  const w=cv.getBoundingClientRect().width||W;const dpr=Math.min(2,window.devicePixelRatio||1);
+  cv.width=Math.round(w*dpr);cv.height=Math.round(w*dpr*H/W);
+  bg.width=cv.width;bg.height=cv.height;const b=bg.getContext('2d');b.setTransform(cv.width/W,0,0,cv.width/W,0,0);drawStatic(b);
+}
+const HEADS=[{dir:'E',hor:true,dx:-66,dy:-38},{dir:'W',hor:true,dx:66,dy:38},{dir:'S',hor:false,dx:38,dy:-66},{dir:'N',hor:false,dx:-38,dy:66}];
+const LC=[['R','#ff3b3b'],['Y','#ffc531'],['G','#27e07a'],['B','#3b9bff']];
+function drawHead(x,y,hor,L,blue){
+  const w=hor?40:12,h=hor?12:40;
+  ctx.save();ctx.translate(x,y);ctx.fillStyle='#05080f';rr(ctx,-w/2,-h/2,w,h,4);ctx.fill();ctx.strokeStyle='#3b4a6b';ctx.lineWidth=1;ctx.stroke();
+  for(let i=0;i<4;i++){
+    const cx=hor?(i-1.5)*9.4:0,cy=hor?0:(i-1.5)*9.4;
+    const on=i<3?L===LC[i][0]:blue;
+    ctx.globalAlpha=on?(i===3?0.75+0.25*Math.sin(S.rt*9):1):0.2;
+    ctx.fillStyle=LC[i][1];
+    if(on){ctx.shadowColor=LC[i][1];ctx.shadowBlur=10;}else ctx.shadowBlur=0;
+    ctx.beginPath();ctx.arc(cx,cy,3.6,0,7);ctx.fill();
+  }
+  ctx.restore();
+}
+function drawRoute(){
+  if(!S.selected)return;
+  const r=S.route,P=r.path,A=S.amb;const L=P.len*S.reveal;
+  ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
+  if(S.sos){
+    trace(ctx,P,0,Math.min(A.s,L));ctx.strokeStyle='rgba(52,211,153,.5)';ctx.lineWidth=6;ctx.setLineDash([]);ctx.stroke();
+    trace(ctx,P,A.s,L);ctx.strokeStyle='rgba(239,68,68,.20)';ctx.lineWidth=18;ctx.stroke();
+    ctx.strokeStyle='rgba(239,68,68,.55)';ctx.lineWidth=8;ctx.stroke();
+    ctx.setLineDash([9,9]);ctx.lineDashOffset=-S.rt*50;ctx.strokeStyle='rgba(255,225,225,.95)';ctx.lineWidth=2.2;ctx.stroke();
+  }else if(S.ended){
+    trace(ctx,P,0,P.len);ctx.strokeStyle='rgba(52,211,153,.35)';ctx.lineWidth=6;ctx.stroke();
+  }else{
+    if(A.state!=='WAITING'){trace(ctx,P,0,Math.min(A.s,L));ctx.strokeStyle='rgba(52,211,153,.4)';ctx.lineWidth=6;ctx.stroke();}
+    trace(ctx,P,A.s>20?A.s:0,L);ctx.strokeStyle='rgba(56,189,248,.14)';ctx.lineWidth=16;ctx.stroke();
+    ctx.setLineDash([10,8]);ctx.lineDashOffset=-S.rt*30;ctx.strokeStyle='rgba(56,189,248,.85)';ctx.lineWidth=3.5;ctx.stroke();
+  }
+  ctx.restore();
+}
+function drawHospMarker(){
+  if(!S.selected)return;
+  const h=S.route.h,[x,y,w,hh]=h.rect,[ex,ey]=h.ent;const p=(S.rt*0.9)%1;
+  ctx.save();
+  ctx.strokeStyle=S.sos?'#ff5a5a':'#38bdf8';ctx.lineWidth=2.5;ctx.shadowColor=ctx.strokeStyle;ctx.shadowBlur=14;
+  rr(ctx,x-2,y-2,w+4,hh+4,6);ctx.stroke();
+  ctx.shadowBlur=0;ctx.globalAlpha=1-p;ctx.lineWidth=2;ctx.beginPath();ctx.arc(ex,ey,6+p*22,0,7);ctx.stroke();
+  ctx.globalAlpha=1;ctx.fillStyle=S.sos?'#ff5a5a':'#38bdf8';ctx.beginPath();ctx.arc(ex,ey,4.5,0,7);ctx.fill();
+  const ty=h.side==='S'?y+hh+0:ey;
+  ctx.restore();
+  /* destination tag */
+  ctx.save();ctx.font='bold 8.5px "Segoe UI",Arial';ctx.textAlign='center';ctx.textBaseline='middle';
+  const tx=h.side==='S'?x+w/2:x+w/2,tyy=h.side==='S'?y+hh-16:y+hh-12;
+  ctx.fillStyle='rgba(8,14,28,.85)';rr(ctx,tx-37,tyy-8,74,15,4);ctx.fill();ctx.fillStyle='#ffd48a';ctx.fillText('◎ DESTINATION',tx,tyy);
+  ctx.restore();
+}
+function drawJunctions(){
+  const onIds=S.selected?S.route.juncs.map(x=>x.id):[];
+  for(const j of JUNCS){
+    const st=S.J[j.id],on=onIds.indexOf(j.id)>=0;
+    if(st.em){
+      const p=(S.rt*1.1)%1;
+      ctx.save();ctx.fillStyle='rgba(59,155,255,.18)';ctx.fillRect(j.x-HALF,j.y-HALF,HALF*2,HALF*2);
+      ctx.strokeStyle='#4da3ff';ctx.lineWidth=2;ctx.shadowColor='#3b9bff';ctx.shadowBlur=16;ctx.strokeRect(j.x-HALF,j.y-HALF,HALF*2,HALF*2);
+      ctx.shadowBlur=0;ctx.globalAlpha=1-p;ctx.beginPath();ctx.arc(j.x,j.y,16+p*40,0,7);ctx.stroke();ctx.restore();
+    }
+    ctx.save();
+    ctx.fillStyle='rgba(8,14,28,.9)';ctx.beginPath();ctx.arc(j.x,j.y,12,0,7);ctx.fill();
+    ctx.lineWidth=2;ctx.strokeStyle=st.em?'#4da3ff':on?'#f5b13d':'#55698f';ctx.stroke();
+    ctx.fillStyle='#fff';ctx.font='bold 10.5px "Segoe UI",Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(j.id,j.x,j.y+.5);
+    /* card */
+    const cx=j.x+j.card[0],cy=j.y+j.card[1],cw=140,ch=50;
+    ctx.fillStyle='rgba(6,12,24,.86)';rr(ctx,cx,cy,cw,ch,6);ctx.fill();
+    ctx.strokeStyle=st.em?'#4da3ff':st.status==='PASSED'?'#34d399':'#2c3f69';ctx.lineWidth=st.em?1.8:1;
+    if(st.em){ctx.shadowColor='#3b9bff';ctx.shadowBlur=10;}ctx.stroke();ctx.shadowBlur=0;
+    ctx.textAlign='left';ctx.textBaseline='middle';
+    ctx.font='bold 11px "Segoe UI",Arial';ctx.fillStyle=st.em?'#9fd0ff':'#fff';ctx.fillText(j.id,cx+8,cy+11);
+    ctx.font='9px "Segoe UI",Arial';ctx.fillStyle='#8fa6cc';ctx.fillText('TRAFFIC SIGNAL · S'+j.n,cx+30,cy+11);
+    ctx.fillText('Emergency Priority:',cx+8,cy+26);
+    ctx.font='bold 9.5px "Segoe UI",Arial';ctx.fillStyle=st.em?'#4da3ff':'#7d92b8';ctx.fillText(st.em?'ON':'OFF',cx+96,cy+26);
+    ctx.font='8.5px ui-monospace,Consolas,monospace';
+    ctx.fillStyle=st.em?'#9fd0ff':st.status==='PASSED'?'#34d399':'#7d92b8';
+    ctx.fillText(S.selected?(st.status+' · '+(on?'ON ROUTE':'OFF ROUTE')):st.status,cx+8,cy+40);
+    ctx.restore();
+  }
+}
+function drawHeads(){
+  for(const j of JUNCS){const st=S.J[j.id];
+    for(const h of HEADS)drawHead(j.x+h.dx,j.y+h.dy,h.hor,lightFor(st,j,h.dir),st.em);
+  }
+}
+function drawCars(){
+  for(const l of lanes)for(const c of l.cars){
+    ctx.save();ctx.translate(c.x,c.y);ctx.rotate(ANG[l.dir]);
+    ctx.fillStyle='rgba(0,0,0,.35)';rr(ctx,-7,-3.5,15,9,2.5);ctx.fill();
+    ctx.fillStyle=c.col;rr(ctx,-7.5,-4.5,15,9,2.5);ctx.fill();
+    ctx.fillStyle='rgba(20,30,50,.78)';ctx.fillRect(1.5,-3.3,3.6,6.6);ctx.fillRect(-5.5,-3.1,2.6,6.2);
+    ctx.fillStyle='rgba(0,0,0,.18)';ctx.fillRect(-3.5,-3,5,6);
+    ctx.fillStyle='#ffe9a8';ctx.fillRect(6.6,-3.4,1.4,1.8);ctx.fillRect(6.6,1.6,1.4,1.8);
+    ctx.fillStyle=c.brk?'#ff2d2d':'#5a1c1c';if(c.brk){ctx.shadowColor='#ff2d2d';ctx.shadowBlur=5;}
+    ctx.fillRect(-7.8,-3.4,1.4,1.8);ctx.fillRect(-7.8,1.6,1.4,1.8);
+    ctx.restore();
+  }
+}
+function drawAmb(){
+  const A=S.amb;const ph=Math.floor(S.rt*5)%2===0;const flashing=S.sos&&A.state!=='ARRIVED';
+  ctx.save();ctx.translate(A.x,A.y);ctx.rotate(A.ang);
+  if(flashing){
+    ctx.globalCompositeOperation='lighter';
+    const g=ctx.createRadialGradient(8,0,2,8,0,60);const col=ph?'255,40,40':'40,120,255';
+    g.addColorStop(0,'rgba('+col+',.35)');g.addColorStop(1,'rgba('+col+',0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(8,0,60,0,7);ctx.fill();
+    ctx.globalCompositeOperation='source-over';
+  }
+  ctx.fillStyle='rgba(0,0,0,.4)';rr(ctx,-14,-5,30,14,3);ctx.fill();
+  ctx.fillStyle='#f6f9fd';rr(ctx,-15,-6.5,30,13,3);ctx.fill();
+  ctx.fillStyle='#d9e1ee';ctx.fillRect(7,-6,8,12);
+  ctx.fillStyle='#1d3358';ctx.fillRect(11.5,-4.6,3,9.2);
+  ctx.fillStyle='#e11d2e';ctx.fillRect(-13,-6.5,18,2.1);ctx.fillRect(-13,4.4,18,2.1);
+  ctx.fillRect(-7.5,-1.3,8,2.6);ctx.fillRect(-4.8,-4,2.6,8);
+  /* light bar */
+  const cR=flashing?(ph?'#ff3030':'#4a1010'):'#4a1010',cB=flashing?(ph?'#102a60':'#3b8bff'):'#102a60';
+  ctx.save();if(flashing){ctx.shadowBlur=12;}
+  ctx.shadowColor='#ff3030';ctx.fillStyle=cR;ctx.fillRect(7.4,-5.6,2.4,5.2);
+  ctx.shadowColor='#3b8bff';ctx.fillStyle=cB;ctx.fillRect(7.4,0.4,2.4,5.2);ctx.restore();
+  ctx.fillStyle='#ffe9a8';ctx.fillRect(14.6,-5,1,2);ctx.fillRect(14.6,3,1,2);
+  ctx.fillStyle='#b01020';ctx.fillRect(-15.2,-5,1,2);ctx.fillRect(-15.2,3,1,2);
+  ctx.restore();
+  /* tag */
+  ctx.save();ctx.font='bold 8.5px "Segoe UI",Arial';ctx.textAlign='center';ctx.textBaseline='middle';
+  const tw=68,tx=A.x,ty=A.y-24;
+  ctx.fillStyle=S.sos?'rgba(150,15,25,.92)':'rgba(10,20,40,.9)';rr(ctx,tx-tw/2,ty-7.5,tw,15,4);ctx.fill();
+  ctx.strokeStyle=S.sos?'#ff8a8a':'#4a6aa5';ctx.lineWidth=1;ctx.stroke();
+  ctx.fillStyle='#fff';ctx.fillText('✚ AMBULANCE',tx,ty+.5);ctx.restore();
+}
+function qb(a,c,b,t){const u=1-t;return u*u*a+2*u*t*c+t*t*b;}
+function drawWireless(){
+  const p=S.pkt;if(!p)return;
+  const A=S.amb,j=JBY[p.jid],st=pktStage(p.t);
+  const cx=(A.x+j.x)/2,cy=(A.y+j.y)/2-70;
+  ctx.save();
+  ctx.setLineDash([5,5]);ctx.lineDashOffset=-S.rt*30;ctx.strokeStyle='rgba(56,189,248,.8)';ctx.lineWidth=1.6;
+  ctx.beginPath();ctx.moveTo(A.x,A.y);ctx.quadraticCurveTo(cx,cy,j.x,j.y);ctx.stroke();ctx.setLineDash([]);
+  const ring=(x,y)=>{const q=(S.rt*1.6)%1;ctx.globalAlpha=1-q;ctx.strokeStyle='#38bdf8';ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,8+q*34,0,7);ctx.stroke();ctx.globalAlpha=1;};
+  if(st<=1)ring(A.x,A.y);else ring(j.x,j.y);
+  let t=st===0?0:st===1?(p.t-PD[0])/PD[1]:1;t=clamp(t,0,1);
+  const dx=qb(A.x,cx,j.x,t),dy=qb(A.y,cy,j.y,t);
+  ctx.fillStyle='#ff5a5a';ctx.shadowColor='#ff5a5a';ctx.shadowBlur=12;ctx.beginPath();ctx.arc(dx,dy,5,0,7);ctx.fill();ctx.shadowBlur=0;
+  ctx.font='bold 9px ui-monospace,Consolas,monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+  const tw=ctx.measureText(p.text).width+10;
+  ctx.fillStyle='rgba(8,14,28,.9)';rr(ctx,dx-tw/2,dy-22,tw,14,4);ctx.fill();ctx.fillStyle='#ffd0d0';ctx.fillText(p.text,dx,dy-14.5);
+  ctx.restore();
+}
+function render(){
+  const k=cv.width/W;ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,cv.width,cv.height);ctx.drawImage(bg,0,0);
+  ctx.setTransform(k,0,0,k,0,0);
+  drawRoute();drawHospMarker();drawJunctions();drawHeads();drawCars();drawAmb();drawWireless();
+}
+
+/* ===================== dashboard / UI ===================== */
+const cache={};
+function setH(id,h){if(cache[id]!==h){cache[id]=h;$(id).innerHTML=h;}}
+function setC(id,cls,on){const e=$(id);if(e)e.classList.toggle(cls,on);}
+const chip=(c,t)=>'<span class="chip '+c+'">'+t+'</span>';
+function buildHw(){
+  let h='';
+  for(let k=0;k<4;k++){
+    h+='<div class="sg" id="sg'+k+'"><h5>SIGNAL '+(k+1)+' · J'+(k+1)+'</h5><div class="leds">';
+    ['R','Y','G','B'].forEach(c=>{h+='<div class="led '+c+'" id="led'+k+c+'"><i></i>'+c+'</div>';});
+    h+='</div><small>BLUE = EMERGENCY PRIORITY</small></div>';
+  }
+  $('sigs').innerHTML=h;
+}
+function updateUI(){
+  const A=S.amb,r=S.route,sel=S.selected;
+  const cur=r.juncs.find(x=>!S.J[x.id].done);
+  const curId=!sel?'—':cur?cur.id:(A.state==='ARRIVED'?'HOSPITAL':'—');
+  const routeS=sel?r.juncs.map(x=>x.id).join(' → '):'—';
+  const ambL=A.state==='ARRIVED'?'ARRIVED':(A.state==='MOVING'&&!A.blocked?'MOVING':'WAITING');
+  setH('dSys',S.sos?chip('c-em','EMERGENCY'):chip('c-ok','NORMAL'));
+  setH('dEmode',S.sos?chip('c-em','ON'):chip('c-mut','OFF'));
+  setH('dAmb',chip(ambL==='MOVING'?'c-cy':ambL==='ARRIVED'?'c-ok':'c-amb',ambL));
+  setH('dDest',sel?r.h.name:'—');
+  setH('dCur',curId);
+  setH('dRoute',routeS);
+  setH('dSos',S.sos?chip('c-em','ACTIVE'):chip('c-mut','OFF'));
+  setH('dLora',chip('c-ok','CONNECTED'));
+  setH('dPkt',chip(S.pktStatus==='SENT'?'c-cy':S.pktStatus==='RECEIVED'?'c-ok':'c-mut',S.pktStatus));
+  /* junction list */
+  let jl='';
+  JUNCS.forEach(j=>{
+    const st=S.J[j.id];const idx=sel?r.juncs.findIndex(x=>x.id===j.id):-1;
+    const c=st.status==='EMERGENCY'?'c-blue':st.status==='PASSED'?'c-mut':'c-ok';
+    jl+='<div class="jrow'+(st.em?' em':'')+'"><div class="jn">'+j.id+'</div><div class="jd">Signal '+j.n+' · '+(sel?(idx>=0?'on route (#'+(idx+1)+')':'off route · stays NORMAL'):'—')+'</div>'+chip(c,st.status)+'</div>';
+  });
+  setH('jlist',jl);
+  /* steps */
+  let sl='';
+  S.stepTexts.forEach((t,i)=>{const cls=i+1<S.stepReached?'done':i+1===S.stepReached?'now':'';sl+='<li class="'+cls+'"><i>'+(i+1<S.stepReached?'✓':(i+1))+'</i><span>'+t+'</span></li>';});
+  setH('steps',sl);
+  /* overlay */
+  setH('aStatus',S.sos?'<span style="color:#ff8a8a">EMERGENCY</span>':A.state==='ARRIVED'?'ARRIVED':A.state==='MOVING'?'NORMAL DRIVE':'STANDBY');
+  setH('aDest',sel?r.h.name:'—');setH('aRoute',routeS);setH('aCur',curId);
+  setH('aEm',S.sos?'<span style="color:#ff8a8a">ACTIVE</span>':'OFF');
+  const ban=S.sos?['em','<b>🚨 EMERGENCY ACTIVE</b><span>Route: '+routeS+'</span>']:S.ended?['done','<b>✔ EMERGENCY ENDED</b><span>All junctions NORMAL</span>']:['ok','<b>SYSTEM STATUS: NORMAL</b><span>EMERGENCY MODE: OFF</span>'];
+  const bn=$('banner');if(cache.banCls!==ban[0]){cache.banCls=ban[0];bn.className='banner '+ban[0];}setH('banner',ban[1]);
+  /* buttons */
+  const sb=$('sosBtn');const sosTxt=S.sos?'🚨 SOS ACTIVE':'🚨 ACTIVATE SOS';
+  if(cache.sosTxt!==sosTxt){cache.sosTxt=sosTxt;sb.textContent=sosTxt;}sb.disabled=S.sos;
+  $('normBtn').disabled=S.sos||A.state==='MOVING';
+  /* comms */
+  setH('cPkt',S.pktStatus);setH('cSent',S.lastText||'—');
+  if(S.sos&&A.state==='MOVING'&&S.rt-S.rssiT>0.4){
+    S.rssiT=S.rt;const nj=r.juncs.find(x=>!S.J[x.id].done);
+    if(nj){const j=JBY[nj.id];S.rssi=Math.round(-58-Math.hypot(j.x-A.x,j.y-A.y)*0.085+(Math.random()*3-1.5));}
+  }
+  setH('cRssi',(S.sos&&S.rssi!==null?S.rssi:'--')+' dBm');
+  const stg=S.pkt?pktStage(S.pkt.t):-1;
+  const act={tx:stg===0,ltx:stg===0||stg===1,lrx:stg===1||stg===2,erx:stg===2||stg===3,'595':stg===3,sig:stg===3||isFl('sig')};
+  const map={tx:['n_tx','h_tx'],ltx:['n_ltx','h_ltx'],lrx:['n_lrx','h_lrx'],erx:['n_erx','h_erx'],'595':['n_595','h_595'],sig:['n_sig','h_sig']};
+  Object.keys(map).forEach(k=>map[k].forEach(id=>setC(id,'on',!!act[k])));
+  setC('wave','on',stg===1);
+  setC('a_driver','on',S.sos||isFl('sel'));setC('a_web','on',S.sos||isFl('sel'));setC('a_hosp','on',isFl('sel'));setC('a_route','on',isFl('sel')||isFl('sos'));setC('a_jid','on',isFl('sel')||stg===0||isFl('jid'));
+  setC('hwEsp','on',stg===2||stg===3);setC('reg1','on',stg===3);setC('reg2','on',stg===3);
+  const dot=$('pdot'),pt=$('ptxt');
+  if(S.pkt){
+    const t=S.pkt.t;let x;
+    if(stg===0)x=46+(160-46)*(t/PD[0]);
+    else if(stg===1)x=160+(360-160)*((t-PD[0])/PD[1]);
+    else if(stg===2)x=360+(474-360)*((t-PD[0]-PD[1])/PD[2]);
+    else x=474+(706-474)*clamp((t-PD[0]-PD[1]-PD[2])/PD[3],0,1);
+    dot.style.display='';dot.setAttribute('cx',x.toFixed(1));pt.setAttribute('x',clamp(x,60,700).toFixed(1));pt.textContent=S.pkt.text;
+  }else{dot.style.display='none';pt.textContent=S.lastText?'Last packet: '+S.lastText:'';pt.setAttribute('x','380');}
+  /* hardware LEDs */
+  let b1='',b2='';
+  for(let k=0;k<4;k++){
+    const L=ledState(k);
+    ['R','Y','G','B'].forEach(c=>setC('led'+k+c,'on',!!L[c]));
+    setC('sg'+k,'em',!!L.B);
+    const nib=''+L.B+L.G+L.Y+L.R;
+    if(k===0)b1=nib;if(k===1)b1=nib+b1;if(k===2)b2=nib;if(k===3)b2=nib+b2;
+  }
+  setH('bits1',b1);setH('bits2',b2);
+}
+
+/* ===================== main loop ===================== */
+let last=performance.now();
+function frame(now){
+  const rdt=Math.min(0.05,(now-last)/1000);last=now;
+  const dt=rdt*S.speed;
+  S.rt+=rdt;S.t+=dt;S.clk+=dt;
+  if(S.selected&&S.reveal<1)S.reveal=Math.min(1,S.reveal+rdt/1.1);
+  if(S.autoT!==null){S.autoT-=rdt;if(S.autoT<=0){S.autoT=null;activateSOS();}}
+  updateCars(dt);
+  updateAmb(dt);
+  updatePacket(dt);
+  if(S.endT!==null){S.endT-=dt;if(S.endT<=0)endEmergency();}
+  render();updateUI();
+  requestAnimationFrame(frame);
+}
+
+/* ===================== init ===================== */
+initCars();buildHw();
+S.route=makeRoute('city');buildSteps();resetSim();
+$('selHosp').addEventListener('change',e=>setHospital(e.target.value,true));
+$('sosBtn').addEventListener('click',activateSOS);
+$('normBtn').addEventListener('click',driveNormal);
+$('autoBtn').addEventListener('click',autoDemo);
+$('resetBtn').addEventListener('click',()=>{$('selHosp').value='';setHospital('',false);$('hint').textContent='';});
+$('selSpeed').addEventListener('change',e=>{S.speed=parseFloat(e.target.value)||1;});
+if(window.ResizeObserver)new ResizeObserver(resize).observe(cv);else window.addEventListener('resize',resize);
+resize();
+if(location.hash==='#autodemo')autoDemo();
+requestAnimationFrame(t=>{last=t;frame(t);});
+})();
+</script>
+</body>
+</html>
